@@ -1,0 +1,328 @@
+
+
+package adsim;
+
+import java.io.DataInputStream;
+
+import java.io.DataOutputStream;
+
+import java.net.ServerSocket;
+
+import java.net.Socket;
+
+import java.util.ArrayList;
+
+import javax.swing.JLabel;
+
+import javax.swing.JOptionPane;
+
+@author nanosatic
+
+class TMServer implements Runnable(
+
+private final int maxConnections;
+
+private ServerSocket server;
+
+private int portNo;
+
+private TMSend Monitor monitor;
+
+private byte[][][] tmData;
+
+private boolean is_acss;
+
+private int[] mcCount;
+
+private int[] vcCount;
+
+private int DataRate;
+
+TMServer(JLabel TMservstat){
+
+portNo = 3070;
+
+Data Rate=4000;
+
+maxConnections = 8;
+
+monitor = new TMSend Monitor(maxConnections, TMservstat);
+
+TMServer(int port, int DR, JLabel TMservstat){
+
+}
+
+portNo = port;
+
+DataRate=DR;
+
+maxConnections = 8;
+
+monitor = new TMSendMonitor(maxConnections, TMservstat);
+
+Thread t = new Thread(monitor);
+
+t.start();
+
+public void setTMData(byte[][][] value){
+
+tmData = value;
+
+monitor.setTMData(value);
+
+System.out.println(value[0][0].length);
+
+public void setCounts(int[] msframecnt, int[] vcframecnt) (
+
+mcCount = msframecnt;
+
+
+vcCount = vcframecnt;
+
+monitor.setCounts(msframecnt, vcframecnt);
+
+public void isACSS(boolean acss){
+
+is_acss=acss;
+
+@Override
+
+public void run() {
+
+try{
+
+server = new ServerSocket(portNo);
+
+while (true){
+
+while (monitor.getNoOfClientsActive() <maxConnections){
+
+Socket client = server.accept();
+
+TMDataSender tmDataSender = new TMDataSender(client, monitor.get
+
+DataRate);
+
+tmDataSender.setTMSendMonitor(monitor);
+
+Thread t = new Thread(tmDataSender);
+
+t.start();
+
+while (monitor.getNoOf ClientsActive() == maxConnections){
+
+System.out.println("8 Clients already connected");
+
+JOptionPane.showMessageDialog(null, "8 Clients already connected!","C
+
+exceeded", JOptionPane.ERROR_MESSAGE);
+
+Thread.sleep(5000);
+
+}
+
+}
+
+}catch(Exception e){
+
+e.printStackTrace();
+
+}
+
+}
+
+class TMSendMonitor implements Runnable(
+
+private int maxConnections;
+
+private volatile boolean[] dataSent;
+
+private int number Of Clients Connected;
+
+private byte[][][] tmData;
+
+int vcid;
+
+int subFrame;
+
+ArrayList<TMDataSender> clients;
+
+private final int ccsdsheadsize = 64;
+
+private final int phPos = 4;
+
+private JLabel ServStat;
+
+private ArrayList<String> connectedClients;
+
+private int[] mcCount;
+
+private int[] vcCount;
+
+public void setCounts(int[] msframecnt, int[] vcframecnt){
+
+
+mcCount = msframecnt;
+
+vcCount = vcframecnt;
+
+public TMSendMonitor(int max, JLabel TMServerStat){
+
+}
+
+maxConnections = max;
+
+dataSent = new boolean[max];
+
+ServStat TMServerStat;
+
+for (int i = 0; i < max;i++){
+
+}
+
+dataSent[i] = true;
+
+numberOfClients Connected = 0;
+
+vcid = subFrame = 0;
+
+clients = new ArrayList<>();
+
+connectedClients = new ArrayList<>();
+
+public void setTMData (byte[][][] value){
+
+tmData = value;
+
+}
+
+@Override
+
+public void run() {
+
+int numberOfVCIDs = tmData.length; int numberOfSubframes = tmData[0].length;
+
+try{
+
+while (true){
+
+Thread.sleep(100); while (numberOfClients Connected == 0){ Thread.sleep(100);
+
+} boolean updated = true; for (boolean sample:dataSent){ updated sample && updated;
+
+}
+
+if (updated) {
+
+for (String clients:connectedClients){ int temp = Integer.parseInt(clients); dataSent[temp] = false; }
+
+vcid++;
+
+if (vcid == numberOfVCIDs){ vcid = 0; subFrame++; if (subFrame == numberOfSubframes){ } subFrame = 0;
+
+} tmData[vcid][subFrame] [ccsdsheadsize+phPos+2) = (byte)mcCount[0]; tmData[vcid][subFrame][ccsdsheadsize+phPos+3] = (byte)vcCount[vcid]; clients.forEach((client) -> { }); client.getData(tmData[vcid][subFrame]);
+
+vcCount[vcid]++;
+ mcCount[0]++;
+
+}catch(Exception e){
+
+e.printStackTrace();
+
+public synchronized void updateSent(int clientNo){
+
+dataSent clientNo] = true;
+
+public synchronized void clientConnected(int clientNo, TMDataSender client)[
+
+dataSent[clientNo] = false;
+
+clients.add(client);
+
+client.getData(tmData[vcid][subFrame));
+
+numberOfClients Connected++;
+
+connectedClients.add(String.valueOf(clientNo));
+
+System.out.println("Client No" + clientNo+"Connected");
+
+System.out.println(connectedClients);
+
+ServStat.setText("Sending data to "+number Of Clients Connected+" Clients.");
+
+}
+
+public synchronized void clientDisconnected(int clientNo){
+
+dataSent clientNo] = true;
+
+numberOfClientsConnected--;
+
+connectedClients.remove(String.valueOf(clientNo));
+
+System.out.println("Client No " + clientNo+" Disconnected");
+
+System.out.println(connectedClients);
+
+ServStat.setText("Sending data to "+numberOfClients Connected+" Clients.");
+
+public int getNoOfClientsActive(){ return connectedClients.size();
+
+public int getFreeClientNumber(){ if (connectedClients.isEmpty()){ return 0;
+
+if (connectedClients.size() == 8){
+
+} ArrayList<String> nonConnected = new ArrayList<>();
+for (int i = 0; i < maxConnections;i++){ nonConnected.add(String.valueOf(i));
+
+return -1;
+
+nonConnected.removeAll(connectedClients); 
+return Integer.parseInt(nonConnected.get(0));
+
+
+
+.......I want to receive whatever data its trying to send give java program for that....................
+
+----------------------------------------------------------------------------------------------------------------------
+
+......Have to test this......
+
+import java.io.DataInputStream;
+import java.net.Socket;
+
+public class TMClient {
+
+    public static void main(String[] args) {
+        String serverAddress = "localhost"; // or replace with IP if remote
+        int port = 3070;
+
+        try (Socket socket = new Socket(serverAddress, port);
+             DataInputStream input = new DataInputStream(socket.getInputStream())) {
+
+            System.out.println("Connected to TMServer at " + serverAddress + ":" + port);
+
+            while (true) {
+                // Read the size of the telemetry data if sent, or fix to a known size
+                int packetSize = 1024; // Example size, change this based on expected data size
+
+                byte[] buffer = new byte[packetSize];
+                input.readFully(buffer); // blocks until the buffer is filled
+
+                // Process received data (example: print first few bytes)
+                System.out.println("Received telemetry data (first 10 bytes): ");
+                for (int i = 0; i < 10 && i < buffer.length; i++) {
+                    System.out.print(buffer[i] + " ");
+                }
+                System.out.println("\n-----------------------------");
+
+                // Optional: sleep or process delay
+                Thread.sleep(500); 
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
