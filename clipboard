@@ -287,7 +287,7 @@ return Integer.parseInt(nonConnected.get(0));
 
 
 
-//this dataframesender.java
+//this TMDataSender.java
 package adsim;
 
 import java.io.BufferedOutputStream;
